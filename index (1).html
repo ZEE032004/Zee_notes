@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=Karla:wght@300;400;500;600&family=Petit+Formal+Script&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plum: #2E1A2F;
+    --plum-deep: #201220;
+    --ivory: #F7EFE6;
+    --rose: #C97B84;
+    --gold: #C9A15A;
+    --ink: #2B2320;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--plum);
+    color:var(--ivory);
+    font-family:'Karla', sans-serif;
+    overflow-x:hidden;
+  }
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
+  }
+
+  /* ---------- shared ---------- */
+  .eyebrow{
+    font-family:'Petit Formal Script', cursive;
+    font-size:1.4rem;
+    color:var(--gold);
+    letter-spacing:0.5px;
+  }
+
+  section{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:6rem 1.5rem;
+    position:relative;
+  }
+
+  h1,h2{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    line-height:1.15;
+  }
+
+  /* ---------- HERO ---------- */
+  #hero{
+    text-align:center;
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(201,161,90,0.14), transparent 60%),
+      var(--plum);
+  }
+
+  #hero .eyebrow{ margin-bottom:1.2rem; opacity:0; animation: fadeUp 1s ease forwards 0.2s; }
+
+  #hero h1{
+    font-size:clamp(2.2rem, 6vw, 4.2rem);
+    max-width:14ch;
+    min-height:1.15em;
+    border-right:2px solid var(--gold);
+    white-space:nowrap;
+    overflow:hidden;
+    margin:0 auto;
+    display:inline-block;
+  }
+
+  #hero .sub{
+    margin-top:2rem;
+    font-size:1.05rem;
+    color:#E4D6D9;
+    opacity:0;
+    animation: fadeUp 1s ease forwards 3.6s;
+  }
+
+  .scroll-hint{
+    position:absolute;
+    bottom:2.5rem;
+    font-size:0.85rem;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--gold);
+    opacity:0;
+    animation: fadeUp 1s ease forwards 4.2s, bob 2.2s ease-in-out infinite 5.4s;
+  }
+
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+  @keyframes bob{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(6px);} }
+  @keyframes blink{ 50%{ border-color:transparent; } }
+  @keyframes floatUp{
+    from{ transform:translateY(0) scale(var(--s,1)); opacity:0; }
+    10%{ opacity:0.55; }
+    90%{ opacity:0.4; }
+    to{ transform:translateY(-100vh) scale(var(--s,1)); opacity:0; }
+  }
+
+  .floating-hearts{ position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .floating-hearts span{
+    position:absolute;
+    bottom:-2rem;
+    color:var(--rose);
+    font-size:1.1rem;
+    animation:floatUp linear infinite;
+  }
+
+  /* ---------- TIMELINE ---------- */
+  #timeline{ background:var(--plum); padding-top:4rem; }
+
+  #timeline .eyebrow{ margin-bottom:0.6rem; }
+  #timeline h2{ font-size:clamp(1.8rem,4vw,2.6rem); margin-bottom:4rem; text-align:center; color:var(--ivory); }
+
+  .thread{
+    position:relative;
+    width:100%;
+    max-width:760px;
+  }
+  .thread::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:0;
+    bottom:0;
+    width:1px;
+    background:linear-gradient(to bottom, transparent, var(--gold) 8%, var(--gold) 92%, transparent);
+    transform:translateX(-50%);
+  }
+
+  .memory{
+    position:relative;
+    width:100%;
+    display:flex;
+    margin-bottom:4.5rem;
+    opacity:0;
+    transform:translateY(24px);
+    transition:opacity 0.8s ease, transform 0.8s ease;
+  }
+  .memory.visible{ opacity:1; transform:translateY(0); }
+  .memory:last-child{ margin-bottom:0; }
+
+  .memory:nth-child(odd) .card{ margin-right:auto; text-align:right; }
+  .memory:nth-child(even) .card{ margin-left:auto; text-align:left; }
+
+  .memory .dot{
+    position:absolute;
+    left:50%; top:0.1rem;
+    transform:translateX(-50%);
+    font-size:0.9rem;
+    color:var(--gold);
+    background:var(--plum);
+    box-shadow:0 0 0 5px rgba(201,161,90,0.35);
+    border-radius:50%;
+    width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .card{
+    width:calc(50% - 2.5rem);
+    background:var(--ivory);
+    color:var(--ink);
+    border-radius:2px;
+    padding:1.4rem 1.6rem;
+    box-shadow:0 10px 26px rgba(0,0,0,0.28);
+  }
+  .card .date{
+    font-family:'Petit Formal Script', cursive;
+    color:var(--rose);
+    font-size:1.15rem;
+    display:block;
+    margin-bottom:0.35rem;
+  }
+  .card p{ font-size:0.95rem; line-height:1.5; }
+  .card .heart{ color:var(--rose); font-size:0.85rem; letter-spacing:3px; display:block; margin-top:0.6rem; opacity:0.85; }
+
+  @media (max-width:640px){
+    .thread::before{ left:14px; }
+    .memory .dot{ left:14px; }
+    .memory:nth-child(odd) .card, .memory:nth-child(even) .card{
+      width:calc(100% - 3rem);
+      margin-left:2.6rem;
+      text-align:left;
+    }
+  }
+
+  /* ---------- LETTER ---------- */
+  #letter{
+    background:var(--plum-deep);
+  }
+  #letter .eyebrow{ margin-bottom:1rem; }
+
+  .envelope{
+    width:min(420px, 86vw);
+    aspect-ratio:3/2;
+    background:var(--rose);
+    border-radius:4px;
+    position:relative;
+    cursor:pointer;
+    box-shadow:0 18px 40px rgba(0,0,0,0.35);
+  }
+  .envelope::before{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(135deg, rgba(255,255,255,0.08), transparent 40%);
+  }
+  .seal{
+    position:absolute;
+    top:50%; left:50%;
+    width:58px; height:58px;
+    border-radius:50%;
+    background:var(--gold);
+    transform:translate(-50%,-50%);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif;
+    font-size:1.4rem;
+    color:var(--plum-deep);
+    box-shadow:0 4px 10px rgba(0,0,0,0.3);
+    transition:transform 0.3s ease;
+  }
+  .envelope:hover .seal{ transform:translate(-50%,-50%) scale(1.06); }
+  .envelope .hint{
+    position:absolute;
+    bottom:-2.2rem; left:0; right:0;
+    text-align:center;
+    font-size:0.85rem;
+    color:#C9BFC2;
+  }
+
+  .letter-paper{
+    display:none;
+    width:min(560px, 90vw);
+    background:var(--ivory);
+    color:var(--ink);
+    padding:3rem clamp(1.6rem,5vw,3.4rem);
+    border-radius:2px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.4);
+    font-family:'Fraunces', serif;
+    line-height:1.8;
+    font-size:1.05rem;
+  }
+  .letter-paper.open{ display:block; animation: fadeUp 0.7s ease; }
+  .letter-paper .sign{
+    font-family:'Petit Formal Script', cursive;
+    font-size:1.6rem;
+    color:var(--rose);
+    margin-top:1.6rem;
+    display:block;
+  }
+
+  /* ---------- QUESTION ---------- */
+  #question{
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(201,123,132,0.18), transparent 60%),
+      var(--plum);
+    text-align:center;
+  }
+  #question h2{ font-size:clamp(2rem,5vw,3.2rem); max-width:16ch; margin-bottom:2.6rem; }
+
+  .choices{ display:flex; gap:1.2rem; flex-wrap:wrap; justify-content:center; }
+
+  .btn{
+    font-family:'Karla', sans-serif;
+    font-size:1rem;
+    font-weight:600;
+    padding:0.95rem 2.2rem;
+    border-radius:999px;
+    border:none;
+    cursor:pointer;
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
+
+  .btn-yes{
+    background:var(--gold);
+    color:var(--plum-deep);
+    box-shadow:0 10px 24px rgba(201,161,90,0.35);
+  }
+  .btn-yes:hover{ transform:translateY(-2px); }
+
+  .btn-no{
+    background:transparent;
+    color:#D8C9CC;
+    border:1px solid rgba(216,201,204,0.4);
+    transition:transform 0.2s ease, box-shadow 0.2s ease, left 0.18s ease, top 0.18s ease;
+    z-index:50;
+  }
+  .btn-no:hover{ background:rgba(255,255,255,0.06); }
+
+  #final{
+    display:none;
+    text-align:center;
+  }
+  #final.show{ display:block; animation: fadeUp 0.9s ease; }
+  #final h2{ color:var(--gold); font-size:clamp(2rem,5vw,3rem); margin-bottom:1rem; }
+  #final p{ color:#E4D6D9; max-width:34ch; margin:0 auto; }
+
+  footer{
+    text-align:center;
+    padding:2.4rem 1.5rem 3rem;
+    font-size:0.8rem;
+    color:#8B7C81;
+    background:var(--plum-deep);
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<section id="hero">
+  <div class="floating-hearts" id="floatingHearts"></div>
+  <span class="eyebrow">♥ FOR THE MOST BEAUTIFUL GIRL IN THE WORLD ♥</span>
+  <h1 id="typed"></h1>
+  <p class="sub">Scroll down. This will only take a few minutes — I promise it's worth it.</p>
+  <span class="scroll-hint">scroll ↓</span>
+</section>
+
+<!-- ============ TIMELINE ============ -->
+<section id="timeline">
+  <span class="eyebrow">our story so far</span>
+  <h2>A few moments I keep coming back to</h2>
+
+  <div class="thread">
+
+    <div class="memory">
+      <span class="dot">♥</span>
+      <div class="card">
+        <span class="date">Moment one </span>
+        <p>it was the moment jab hum Murree gaye thy ghoomne mene tumhien tab first time notice kiya tha jub tum mere sath sath mere piche piche chal rhi thi wo firt moment tha that i rteally feel somthing for u</p>
+        <span class="heart">♥ ♥ ♥</span>
+      </div>
+    </div>
+
+    <div class="memory">
+      <span class="dot">♥</span>
+      <div class="card">
+        <span class="date">Moment two</span>
+        <p>it was the moment jab mene apko propose kiya tha. me ghar ja kar dara huva tha k pta ni ap kya jwab do gi but u said yes</p>
+        <span class="heart">♥ ♥ ♥</span>
+      </div>
+    </div>
+
+    <div class="memory">
+      <span class="dot">♥</span>
+      <div class="card">
+        <span class="date">Moment three </span>
+        <p>it was the moment jab apne muje propose kiya tha i was trembling or muje goosbumps aye thay my heart beat was so fast and after that tumhara dill mera ho gya or mera to pehle se hi apaka ha jab me hi apka hu</p>
+        <span class="heart">♥ ♥ ♥</span>
+      </div>
+    </div>
+
+    <div class="memory">
+      <span class="dot">♥</span>
+      <div class="card">
+        <span class="date">Moment four</span>
+        <p>ye wo moments ha jo humne mushkil waqt me sath guzare ha humari ladaiya hui hum long distance me to wese hi ha but we've never gave up on ourselve and i hope Allah humien next b aise hi rakhe or humare liye asaniya paida kare i cant live without you </p>
+        <span class="heart">♥ ♥ ♥</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ LETTER ============ -->
+<section id="letter">
+  <span class="eyebrow">before I ask</span>
+
+  <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Open the letter">
+    <div class="seal">♥</div>
+    <span class="hint">tap to open</span>
+  </div>
+
+  <div class="letter-paper" id="letterPaper">
+    <p>DEAR IMAAN,</p>
+    <br>
+    <p>To The Love of My Life,
+      <br>
+      Dear medam G,
+      <br>
+      i beg to say that
+      <br>
+      "adhoori chahtien meri.
+      adhoori dastaan meri.
+      mere jazbe adhore hain.
+      meri khuwahisho k pemane adhure hain.
+      muhobbat k mere honto pe afsane adhure hain.
+      adhoorepan ki ik duniya mere charo trf ha.
+      phir b me apne dill ki sab gehraiyo se izhar krta hu.
+      <br>
+      ME TUMSE PIYAR KARTA HU"
+    </p>
+
+    <span class="sign">Apka ZEE</span>
+  </div>
+</section>
+
+<!-- ============ QUESTION ============ -->
+<section id="question">
+  <div id="ask">
+    <span class="eyebrow">♥ so,Imaan Younas... ♥</span>
+    <h2>Will you marry me?</h2>
+    <div class="choices">
+      <button class="btn btn-yes" id="yesBtn">Yes, I will</button>
+      <button class="btn btn-no" id="noBtn">No</button>
+    </div>
+  </div>
+
+  <div id="final">
+    <h2>♥ She said yes. ♥</h2>
+    <p>muje pata tha ap yes hi karo gi bhala mere jese shreef or handsom ladke ko kon hi na bole gi</p>
+  </div>
+</section>
+
+<footer>
+  wrote my feelings, from the purest part of my heart where U R located.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+<script>
+  // ---------- floating hearts ----------
+  const heartLayer = document.getElementById('floatingHearts');
+  const heartChars = ['♥','❤','♡'];
+  for(let n=0; n<14; n++){
+    const h = document.createElement('span');
+    h.textContent = heartChars[Math.floor(Math.random()*heartChars.length)];
+    h.style.left = Math.random()*100 + '%';
+    h.style.setProperty('--s', (0.6 + Math.random()*0.9).toFixed(2));
+    h.style.fontSize = (0.8 + Math.random()*1.2) + 'rem';
+    h.style.animationDuration = (7 + Math.random()*8) + 's';
+    h.style.animationDelay = (Math.random()*8) + 's';
+    heartLayer.appendChild(h);
+  }
+
+  // ---------- typing effect ----------
+  const typedEl = document.getElementById('typed');
+  const fullText = "DEAR IMAAN.";
+  let i = 0;
+  function type(){
+    if(i <= fullText.length){
+      typedEl.textContent = fullText.slice(0, i);
+      i++;
+      setTimeout(type, 65);
+    } else {
+      typedEl.style.animation = 'blink 0.9s step-end infinite';
+    }
+  }
+  setTimeout(type, 300);
+
+  // ---------- timeline reveal on scroll ----------
+  const memories = document.querySelectorAll('.memory');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.25 });
+  memories.forEach(m=>io.observe(m));
+
+  // ---------- envelope open ----------
+  const envelope = document.getElementById('envelope');
+  const letterPaper = document.getElementById('letterPaper');
+  function openLetter(){
+    envelope.style.display = 'none';
+    letterPaper.classList.add('open');
+  }
+  envelope.addEventListener('click', openLetter);
+  envelope.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openLetter(); }
+  });
+
+  // ---------- question ----------
+  const yesBtn = document.getElementById('yesBtn');
+  const noBtn = document.getElementById('noBtn');
+  const ask = document.getElementById('ask');
+  const final = document.getElementById('final');
+
+  yesBtn.addEventListener('click', ()=>{
+    ask.style.display = 'none';
+    final.classList.add('show');
+    const duration = 2600;
+    const end = Date.now() + duration;
+    (function frame(){
+      confetti({ particleCount: 4, angle: 60, spread: 60, origin: { x: 0 }, colors: ['#C9A15A','#C97B84','#F7EFE6'] });
+      confetti({ particleCount: 4, angle: 120, spread: 60, origin: { x: 1 }, colors: ['#C9A15A','#C97B84','#F7EFE6'] });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    })();
+  });
+
+  const dodgePhrases = ["No", "Nope", "Nice try", "Not quite", "Try again?", "Almost", "Nah", "Catch me", "So close", "Keep trying"];
+  let dodgeCount = 0;
+
+  function dodgeNo(){
+    const rect = noBtn.getBoundingClientRect();
+    const margin = 24;
+    const maxX = Math.max(margin, window.innerWidth - rect.width - margin);
+    const maxY = Math.max(margin, window.innerHeight - rect.height - margin);
+    const newX = margin + Math.random() * (maxX - margin);
+    const newY = margin + Math.random() * (maxY - margin);
+
+    noBtn.style.position = 'fixed';
+    noBtn.style.left = newX + 'px';
+    noBtn.style.top = newY + 'px';
+    noBtn.style.margin = '0';
+
+    dodgeCount++;
+    noBtn.textContent = dodgePhrases[dodgeCount % dodgePhrases.length];
+  }
+
+  noBtn.addEventListener('mouseenter', dodgeNo);
+  noBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); dodgeNo(); }, { passive:false });
+  noBtn.addEventListener('click', (e)=>{ e.preventDefault(); dodgeNo(); });
+</script>
+
+</body>
+</html>
